@@ -1,7 +1,18 @@
+# Makefile for building client and server programs
+
+# Compiler and flags
+CC = gcc
+CFLAGS = -Wall
+
+# Targets
 all: server client
 
 server: server.c
-	gcc server.c -o server -lpthread  
+	$(CC) $(CFLAGS) server.c -o server -lpthread
 
 client: client.c
-	gcc client.c -o client
+	$(CC) $(CFLAGS) client.c -o client
+
+# Clean up build artifacts
+clean:
+	rm -f server client *.o
