@@ -12,6 +12,14 @@
 #include <pthread.h>
 #include <dirent.h>
 
+/*
+* server.c / Practicum 2 
+*
+* Shorena K. Anzhilov / CS5600 / Northeastern University
+* Spring 2025 / April 2025
+*
+*/
+
 #define PORT 2024
 #define BUFFER_SIZE 4096
 #define ROOT_DIR "server_storage"
