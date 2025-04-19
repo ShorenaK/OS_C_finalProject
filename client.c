@@ -1,3 +1,13 @@
+/*
+ * client.c / Practicum 2
+ *
+ * Shorena K. Anzhilov / CS5600 / Northeastern University
+ * Spring 2025 / April 2025
+ *
+ * This client program connects to a server to perform file operations such as WRITE, GET, RM, and LS.
+ * It supports versioning, encryption/decryption, and handles communication over TCP sockets.
+ */
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -7,18 +17,11 @@
 #include <fcntl.h>
 #include <sys/stat.h>
 
-/*
-* client.c / Practicum 2 
-*
-* Shorena K. Anzhilov / CS5600 / Northeastern University
-* Spring 2025 / April 2025
-*
-*/
-
 #define BUFFER_SIZE 4096
-#define ENCRYPTION_KEY "secretkey"  // === Part 4c: Encryption Key ===
+#define ENCRYPTION_KEY "secretkey"  // ====  Encryption key for XOR cipher ==== // 
 
-// === Part 4c: XOR Encryption Helper ===
+// === XOR Encryption/Decryption Function === // 
+
 void xor_cipher(char *data, long size, const char *key) {
     size_t key_len = strlen(key);
     for (long i = 0; i < size; ++i) {
@@ -28,6 +31,8 @@ void xor_cipher(char *data, long size, const char *key) {
 
 int main(int argc, char *argv[]) {
     if (argc < 2) {
+
+        // Display usage instructions if insufficient arguments are provided
         printf("Usage:\n");
         printf("  %s WRITE local_file_path remote_file_path\n", argv[0]);
         printf("  %s GET remote_file_path[:version] local_file_path\n", argv[0]);
@@ -40,7 +45,8 @@ int main(int argc, char *argv[]) {
     struct sockaddr_in server_addr;
     char buffer[BUFFER_SIZE];
 
-    // === Connect to Server ===
+    // === Establish Connection to Server === // 
+
     sock = socket(AF_INET, SOCK_STREAM, 0);
     if (sock < 0) {
         perror("Socket creation failed");
@@ -57,7 +63,8 @@ int main(int argc, char *argv[]) {
         return 1;
     }
 
-    // === Part 1 + 4c: WRITE with Encryption ===
+    // === WRITE Command: Upload File with Encryption === //
+
     if (strcmp(argv[1], "WRITE") == 0 && argc == 4) {
         char *local_path = argv[2];
         char *remote_path = argv[3];
@@ -91,14 +98,7 @@ int main(int argc, char *argv[]) {
         fread(filedata, 1, filesize, fp);
         fclose(fp);
 
-        xor_cipher(filedata, filesize, ENCRYPTION_KEY); // Encrypt data
-
-         // 🔍 Print encrypted bytes for debug
-        printf("DEBUG: Encrypted content (first 32 bytes or less):\n");
-        for (int i = 0; i < (filesize < 32 ? filesize : 32); i++) {
-            printf("%02x ", (unsigned char)filedata[i]);
-        }
-        printf("\n");
+        xor_cipher(filedata, filesize, ENCRYPTION_KEY); // == Encrypt data === // 
 
         char header[1024];
         snprintf(header, sizeof(header), "WRITE %s %ld\n", remote_path, filesize);
@@ -109,7 +109,8 @@ int main(int argc, char *argv[]) {
         free(filedata);
     }
 
-    // === Part 2 + 4b + 4c: GET with Versioning and Decryption ===
+    // === GET Command: Download File with Optional Version and Decryption === // 
+
     else if (strcmp(argv[1], "GET") == 0 && argc == 4) {
         char *remote_arg = argv[2];
         char *local_path = argv[3];
@@ -176,7 +177,8 @@ int main(int argc, char *argv[]) {
         printf("Decrypted file saved as '%s'\n", local_path);
     }
 
-    // === Part 3: RM ===
+    // === RM Command: Delete File on Server === // 
+
     else if (strcmp(argv[1], "RM") == 0 && argc == 3) {
         char *remote_path = argv[2];
 
@@ -189,7 +191,8 @@ int main(int argc, char *argv[]) {
         printf("Server response: %s\n", buffer);
     }
 
-    // === Part 4d: LS ===
+    // === LS Command: List Files on Server === // 
+
     else if (strcmp(argv[1], "LS") == 0) {
         char header[1024];
         if (argc == 3)
@@ -215,4 +218,3 @@ int main(int argc, char *argv[]) {
     close(sock);
     return 0;
 }
-
