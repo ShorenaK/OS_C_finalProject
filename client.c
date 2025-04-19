@@ -153,8 +153,6 @@ int main(int argc, char *argv[]) {
             bytes_received += chunk;
         }
 
-        xor_cipher(filedata, filesize, ENCRYPTION_KEY); // Decrypt data
-
         FILE *fp = fopen(local_path, "wb");
         if (!fp) {
             perror("Failed to create local file");
