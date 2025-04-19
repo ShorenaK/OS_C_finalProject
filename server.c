@@ -1,9 +1,9 @@
 /*
  * server.c - Practicum 2 Project
  * 
- * Author: Shorena K. Anzhilov
- * Course: CS5600 - Northeastern University
- * Semester: Spring 2025
+ * Shorena K. Anzhilov
+ * CS5600 - Northeastern University
+ * Spring 2025
  * 
  * This server program handles multiple client connections concurrently.
  * It supports the following functionalities:
