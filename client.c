@@ -85,6 +85,13 @@ int main(int argc, char *argv[]) {
 
         xor_cipher(filedata, filesize, ENCRYPTION_KEY); // Encrypt data
 
+         // 🔍 Print encrypted bytes for debug
+        printf("DEBUG: Encrypted content (first 32 bytes or less):\n");
+        for (int i = 0; i < (filesize < 32 ? filesize : 32); i++) {
+            printf("%02x ", (unsigned char)filedata[i]);
+        }
+        printf("\n");
+
         char header[1024];
         snprintf(header, sizeof(header), "WRITE %s %ld\n", remote_path, filesize);
         send(sock, header, strlen(header), 0);
