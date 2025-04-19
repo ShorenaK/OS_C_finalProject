@@ -114,13 +114,11 @@ void *handle_client(void *arg) {
 
         char *file_start = strchr(buffer, '\n') + 1;
         long written = received - (file_start - buffer);
-        xor_cipher(file_start, written, ENCRYPTION_KEY);
         fwrite(file_start, 1, written, fp);
 
         while (written < filesize) {
             ssize_t chunk = recv(client_sock, buffer, sizeof(buffer), 0);
             if (chunk <= 0) break;
-            xor_cipher(buffer, chunk, ENCRYPTION_KEY);
             fwrite(buffer, 1, chunk, fp);
             written += chunk;
         }
