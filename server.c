@@ -1,4 +1,3 @@
-// === server.c with 4a (multi-client), 4b (versioning), 4c (encryption), 4d (LS, SIGINT) ===
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -27,7 +26,7 @@
 
 int server_sock; // for SIGINT handling
 pthread_mutex_t file_mutex = PTHREAD_MUTEX_INITIALIZER;
-
+// 4a (multi-client), 4b (versioning), 4c (encryption), 4d (LS, SIGINT) ===
 void xor_cipher(char *data, long size, const char *key) {
     size_t key_len = strlen(key);
     for (long i = 0; i < size; ++i) {
