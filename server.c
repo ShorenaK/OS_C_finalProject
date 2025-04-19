@@ -1,4 +1,4 @@
-/ === server.c with 4a (multi-client), 4b (versioning), 4c (encryption), 4d (LS, SIGINT) ===
+// === server.c with 4a (multi-client), 4b (versioning), 4c (encryption), 4d (LS, SIGINT) ===
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
