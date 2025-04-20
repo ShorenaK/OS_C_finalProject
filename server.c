@@ -7,17 +7,12 @@
  * 
  * This server program handles multiple client connections concurrently.
  * It supports the following functionalities:
- * - WRITE: Receive and store encrypted files with versioning.
- * - GET: Send decrypted files to clients, supporting version retrieval.
- * - RM: Remove specified files from the server storage.
- * - LS: List files in the server storage, with optional filtering.
- * - SIGINT Handling: Gracefully shuts down the server upon receiving Ctrl+C.
- * 
- * Features Implemented:
- * - Multi-client handling using pthreads.
- * - File versioning.
- * - XOR-based encryption/decryption.
- * - Signal handling for graceful termination.
+ * WRITE: Receive and store encrypted files with versioning.
+ * GET: Send decrypted files to clients, supporting version retrieval.
+ * RM: Remove specified files from the server storage.
+ * LS: List files in the server storage, with optional filtering.
+ * SIGINT Handling: Gracefully shuts down the server upon receiving Ctrl+C.
+ *
  */
 
 #include <stdio.h>
@@ -32,6 +27,7 @@
 #include <errno.h>
 #include <pthread.h>
 #include <dirent.h>
+#include <sys/stat.h>
 
 #define PORT 2024
 #define BUFFER_SIZE 4096
@@ -140,13 +136,14 @@ void *handle_client(void *arg) {
         pthread_exit(NULL);
     }
     
-    // === WRITE Operation  === //
-    
+    // === WRITE Operation === //
+
     if (strncmp(buffer, "WRITE", 5) == 0) {
         char filepath[1024];
         long filesize;
         sscanf(buffer, "WRITE %s %ld", filepath, &filesize);
-        
+
+        // Split the remote path into name and extension
         char *dot = strrchr(filepath, '.');
         char filename[512];
         char ext[32] = "";
@@ -157,32 +154,49 @@ void *handle_client(void *arg) {
         } else {
             strcpy(filename, filepath);
         }
-        
+
         pthread_mutex_lock(&file_mutex);
         int version = get_latest_version(filename) + 1;
-        
+
+        // Build the full path to the new versioned file
         char final[2048];
         snprintf(final, sizeof(final), "%s/%s_v%d%s", ROOT_DIR, filename, version, ext);
         make_parent_dirs(final);
+
+        // === Permission Check === //
+        if (access(final, F_OK) == 0) {
+            if (access(final, W_OK) != 0) {
+                send(client_sock, "Permission denied.\n", 19, 0);
+                pthread_mutex_unlock(&file_mutex);
+                close(client_sock);
+                pthread_exit(NULL);
+            }
+        }
+
         FILE *fp = fopen(final, "wb");
         pthread_mutex_unlock(&file_mutex);
         if (!fp) {
             close(client_sock);
             pthread_exit(NULL);
         }
-        
+
+        // Write initial data
         char *file_start = strchr(buffer, '\n') + 1;
         long written = received - (file_start - buffer);
         fwrite(file_start, 1, written, fp);
-        
+
+        // Continue receiving remaining data
         while (written < filesize) {
             ssize_t chunk = recv(client_sock, buffer, sizeof(buffer), 0);
             if (chunk <= 0) break;
             fwrite(buffer, 1, chunk, fp);
             written += chunk;
         }
-        
+
         fclose(fp);
+        // Set read/write permissions for owner, read for others
+        chmod(final, 0644);
+
         printf("Saved: %s (%ld bytes)\n", final, written);
     }
     
