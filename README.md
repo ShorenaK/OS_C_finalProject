@@ -1,0 +1,4 @@
+client.c
+CS5600_Practicum2_Grading_Rubric.xlsx
+CS5600_Practicum2_SubmissionCS5600_Practicum2_Submission.tar
+CS5600_Procticum_2_Report.pdfmakefileserver.c
